@@ -1,27 +1,139 @@
 <!DOCTYPE html>
-<html lang="in-en">
-    <head>
-        <meta charset="UTF-8">
-	<meta http-equiv="refresh" content="60">
-	<meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>this is my website</title>
-        <link rel="icon" href="images/moai emoji.png">
-        <link rel="stylesheet" href="style.css">
-    </head>
-    <body>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Word Typing Practice</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            margin: 20px;
+        }
+        .word-section {
+            border: 1px solid #ddd;
+            padding: 10px;
+            margin-bottom: 15px;
+            border-radius: 5px;
+        }
+        .word-section h3 {
+            margin-top: 0;
+        }
+        .controls {
+            margin-bottom: 10px;
+        }
+        .typing-input {
+            width: 100%;
+            padding: 8px;
+            margin-top: 10px;
+            font-size: 16px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Word Typing Practice</h1>
 
-<h1 id="h1">verify your age to enter this site.</h1>
-<br>
-<label id="lbl" for="txt">Enter Your age: </label>
-<input id="txt" type="number" placeholder="0" required>
-<div id="box">
-<button class="btn" id="sub">submit</button>
-<button class="btn" id="reset">reset</button>
-</div>
-<br><br>
-<h1 class="dis" id="dis1"> </h1>
-<h1 class="dis" id="dis2"> </h1>
+    <!-- Word Section Template -->
+    <div id="word-sections">
+        <!-- Sections will be dynamically added here -->
+    </div>
 
-	<script src="index.js"></script>
-    </body>
+    <div class="word-section">
+        <h3>Custom Word Practice</h3>
+        <label for="custom-word">Enter your word: </label>
+        <input type="text" id="custom-word" placeholder="Type your word here...">
+        <button onclick="addCustomWord()">Add Word</button>
+    </div>
+
+    <script>
+        const words = ["example", "practice", "typing"];
+
+        function createWordSection(word) {
+            const section = document.createElement('div');
+            section.className = 'word-section';
+
+            section.innerHTML = `
+                <h3>Word: <span id="current-${word}">${word}</span></h3>
+                <div class="controls">
+                    <button onclick="changeWord('${word}', 'uppercase')">All Uppercase</button>
+                    <button onclick="changeWord('${word}', 'lowercase')">All Lowercase</button>
+                    <button onclick="changeWord('${word}', 'capitalize')">First Letter Capital</button>
+                </div>
+                <label for="time-${word}">Time Limit (in seconds): </label>
+                <input type="number" id="time-${word}" value="60">
+                <br><br>
+                <label for="repeat-${word}">Repetition Count: </label>
+                <input type="number" id="repeat-${word}" value="1">
+                <br><br>
+                <button onclick="startPractice('${word}')">Start Practice</button>
+                <div id="result-${word}" style="margin-top: 10px;"></div>
+                <input type="text" id="input-${word}" class="typing-input" placeholder="Type the word here..." disabled>
+            `;
+
+            document.getElementById('word-sections').appendChild(section);
+        }
+
+        function changeWord(word, format) {
+            const currentSpan = document.getElementById(`current-${word}`);
+            if (format === 'uppercase') {
+                currentSpan.textContent = word.toUpperCase();
+            } else if (format === 'lowercase') {
+                currentSpan.textContent = word.toLowerCase();
+            } else if (format === 'capitalize') {
+                currentSpan.textContent = word.charAt(0).toUpperCase() + word.slice(1).toLowerCase();
+            }
+        }
+
+        function startPractice(word) {
+            const timeLimit = parseInt(document.getElementById(`time-${word}`).value, 10);
+            const repeatCount = parseInt(document.getElementById(`repeat-${word}`).value, 10);
+            const resultDiv = document.getElementById(`result-${word}`);
+            const inputField = document.getElementById(`input-${word}`);
+
+            inputField.disabled = false;
+            inputField.value = "";
+            inputField.focus();
+
+            let completed = 0;
+            const startTime = Date.now();
+
+            const practiceInterval = setInterval(() => {
+                const elapsedTime = Math.floor((Date.now() - startTime) / 1000);
+                if (elapsedTime >= timeLimit || completed >= repeatCount) {
+                    clearInterval(practiceInterval);
+                    inputField.disabled = true;
+                    resultDiv.innerHTML = `<p>Practice completed! You practiced "${word}" ${completed} time(s) in ${elapsedTime} seconds.</p>`;
+                }
+            }, 1000);
+
+            inputField.addEventListener('input', function checkInput() {
+                if (inputField.value === word) {
+                    completed++;
+                    inputField.value = "";
+                    if (completed >= repeatCount) {
+                        clearInterval(practiceInterval);
+                        inputField.disabled = true;
+                        inputField.removeEventListener('input', checkInput);
+                        resultDiv.innerHTML = `<p>Practice completed! You practiced "${word}" ${completed} time(s).</p>`;
+                    }
+                }
+            });
+        }
+
+        function addCustomWord() {
+            const customWord = document.getElementById('custom-word').value.trim();
+            if (customWord) {
+                createWordSection(customWord);
+                document.getElementById('custom-word').value = "";
+            } else {
+                alert('Please enter a word to practice.');
+            }
+        }
+
+        // Initialize word sections
+        words.forEach(createWordSection);
+    </script>
+</body>
 </html>
